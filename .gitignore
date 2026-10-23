@@ -1,0 +1,19 @@
+# Entornos virtuales
+venv/
+.venv/
+env/
+
+# Python
+__pycache__/
+*.pyc
+.pytest_cache/
+
+# Archivos subidos por los usuarios (no se suben al repo)
+datos/subidos/*
+!datos/subidos/.gitkeep
+
+# Editores / sistema
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db

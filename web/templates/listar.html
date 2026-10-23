@@ -1,0 +1,19 @@
+{% extends "base.html" %}
+{% block titulo %}Datos cargados{% endblock %}
+
+{% block contenido %}
+<h1 class="h3 mb-3">Datos cargados</h1>
+{% if datasets %}
+<div class="list-group">
+  {% for d in datasets %}
+  <a class="list-group-item list-group-item-action d-flex justify-content-between"
+     href="{{ url_for('vista_previa', id_dataset=d.id) }}">
+    <span>{{ d.nombre_original }}</span>
+    <span class="text-muted small">{{ d.filas }} filas · {{ d.columnas }} columnas</span>
+  </a>
+  {% endfor %}
+</div>
+{% else %}
+<p class="text-muted">Todavía no se ha cargado ningún archivo. <a href="{{ url_for('inicio') }}">Cargar uno</a>.</p>
+{% endif %}
+{% endblock %}

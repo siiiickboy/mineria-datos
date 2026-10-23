@@ -1,0 +1,8 @@
+flask>=3.0
+pandas>=2.0
+numpy>=1.26
+pytest>=8.0
+# Se usarán en los siguientes módulos:
+# scikit-learn>=1.4   (RF3 - árbol de decisión)
+# mlxtend>=0.23       (RF4 - asociación)
+# plotly>=5.0         (RF6 - dashboard)

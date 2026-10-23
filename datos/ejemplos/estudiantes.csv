@@ -1,0 +1,11 @@
+id;Nombre;Edad;Ciudad;Horas de Estudio;Nota Final;Aprobado
+1;Ana;20;Santiago;10;6,1;Si
+2;Luis;22;Concepción;4;3,8;No
+3;María;;Valparaíso;8;5,5;Si
+4;Pedro;21;Santiago;2;3,2;No
+5;Camila;23;Temuco;12;6,8;Si
+5;Camila;23;Temuco;12;6,8;Si
+6;Jorge;250;Talca;6;4,5;Si
+7;Sofía;20;;9;5,9;Si
+8;Diego;24;Santiago;1;2,9;No
+9;Valentina;22;Concepción;7;5,0;Si

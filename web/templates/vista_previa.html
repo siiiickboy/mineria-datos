@@ -1,0 +1,70 @@
+{% extends "base.html" %}
+{% block titulo %}Vista previa · {{ d.nombre_original }}{% endblock %}
+
+{% block contenido %}
+<h1 class="h3 mb-1">{{ d.nombre_original }}</h1>
+<p class="text-muted mb-4">ID: <code>{{ d.id }}</code></p>
+
+<!-- Resultado de la validación -->
+<div class="row g-3 mb-4">
+  <div class="col-6 col-md-3"><div class="tarjeta"><div class="valor">{{ d.filas }}</div><div class="etiqueta">Filas</div></div></div>
+  <div class="col-6 col-md-3"><div class="tarjeta"><div class="valor">{{ d.columnas }}</div><div class="etiqueta">Columnas</div></div></div>
+  <div class="col-6 col-md-3"><div class="tarjeta"><div class="valor">{{ d.total_nulos }}</div><div class="etiqueta">Valores nulos</div></div></div>
+  <div class="col-6 col-md-3"><div class="tarjeta"><div class="valor">{{ d.duplicados }}</div><div class="etiqueta">Filas duplicadas</div></div></div>
+</div>
+
+<div class="card mb-4">
+  <div class="card-header fw-semibold">Validación del archivo</div>
+  <ul class="list-group list-group-flush">
+    <li class="list-group-item">✅ Formato: CSV</li>
+    <li class="list-group-item">✅ Tamaño: {{ d.tamano_kb }} KB</li>
+    <li class="list-group-item">✅ Codificación detectada: <strong>{{ d.codificacion }}</strong></li>
+    <li class="list-group-item">✅ Separador detectado: <strong>{{ d.separador_nombre }}</strong></li>
+    {% for adv in d.advertencias %}
+      <li class="list-group-item list-group-item-warning">⚠️ {{ adv }}</li>
+    {% endfor %}
+  </ul>
+</div>
+
+<!-- Columnas -->
+<div class="card mb-4">
+  <div class="card-header fw-semibold">Columnas</div>
+  <div class="table-responsive">
+    <table class="table table-sm mb-0">
+      <thead><tr><th>Columna</th><th>Tipo</th><th>Nulos</th><th>Valores únicos</th></tr></thead>
+      <tbody>
+        {% for c in d.detalle_columnas %}
+        <tr>
+          <td>{{ c.nombre }}</td>
+          <td><span class="badge text-bg-secondary">{{ c.tipo }}</span></td>
+          <td class="{{ 'text-danger fw-semibold' if c.nulos > 0 }}">{{ c.nulos }}</td>
+          <td>{{ c.unicos }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<!-- Primeras filas -->
+<div class="card">
+  <div class="card-header fw-semibold">Primeras {{ d.primeras_filas|length }} filas</div>
+  <div class="table-responsive tabla-datos">
+    <table class="table table-striped table-sm mb-0">
+      <thead><tr><th>#</th>{% for h in d.encabezados %}<th>{{ h }}</th>{% endfor %}</tr></thead>
+      <tbody>
+        {% for fila in d.primeras_filas %}
+        <tr>
+          <td class="text-muted">{{ loop.index }}</td>
+          {% for v in fila %}
+            <td>{% if v is none %}<span class="nulo">vacío</span>{% else %}{{ v }}{% endif %}</td>
+          {% endfor %}
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<a href="{{ url_for('inicio') }}" class="btn btn-outline-secondary mt-4">Cargar otro archivo</a>
+{% endblock %}
