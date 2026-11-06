@@ -1,0 +1,54 @@
+{% extends "base.html" %}
+
+{% block titulo %}Resultados del Análisis{% endblock %}
+
+{% block contenido %}
+<h1 class="h3 mb-4">Resultados del Análisis y Modelado</h1>
+
+<div class="row">
+    <!-- RF2: Resumen de Limpieza -->
+    <div class="col-md-5">
+        <div class="card mb-4">
+            <div class="card-header bg-primary text-white fw-semibold">
+                1. Limpieza Automática (RF2)
+            </div>
+            <ul class="list-group list-group-flush">
+                <li class="list-group-item"><strong>Filas Originales:</strong> {{ resumen_lim.filas_originales }}</li>
+                <li class="list-group-item"><strong>Filas Finales:</strong> {{ resumen_lim.filas_finales }}</li>
+                <li class="list-group-item"><strong>Duplicados Eliminados:</strong> {{ resumen_lim.duplicados_eliminados }}</li>
+                <li class="list-group-item"><strong>Nulos Tratados:</strong> {{ resumen_lim.nulos_tratados }}</li>
+                <li class="list-group-item"><strong>Atípicos Tratados:</strong> {{ resumen_lim.atipicos_tratados }}</li>
+            </ul>
+        </div>
+
+        <!-- RF3: Métricas -->
+        <div class="card mb-4">
+            <div class="card-header bg-success text-white fw-semibold">
+                2. Métricas del Modelo (RF3)
+            </div>
+            <table class="table mb-0">
+                <tr><th>Exactitud (Accuracy)</th><td>{{ metricas.exactitud }}</td></tr>
+                <tr><th>Precisión</th><td>{{ metricas.precision }}</td></tr>
+                <tr><th>Recall</th><td>{{ metricas.recall }}</td></tr>
+            </table>
+        </div>
+    </div>
+
+    <!-- RF3: Gráfico del Árbol -->
+    <div class="col-md-7">
+        <div class="card mb-4">
+            <div class="card-header bg-dark text-white fw-semibold">
+                3. Visualización del Árbol
+            </div>
+            <div class="card-body text-center">
+                <img src="{{ url_for('static', filename=grafico) }}" alt="Árbol de Decisión" class="img-fluid border">
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="mt-2">
+    <a href="{{ url_for('inicio') }}" class="btn btn-outline-secondary">Subir otro archivo</a>
+    <a href="{{ url_for('listar') }}" class="btn btn-outline-primary ms-2">Ver historial</a>
+</div>
+{% endblock %}
