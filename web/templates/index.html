@@ -2,68 +2,162 @@
 {% block titulo %}Cargar CSV{% endblock %}
 
 {% block contenido %}
-<div class="row justify-content-center">
-  <div class="col-lg-7">
-    <h1 class="h3 mb-3">Cargar archivo de datos</h1>
-    <p class="text-muted">
-      Sube un archivo <strong>.csv</strong> de hasta <strong>{{ tamano_maximo }} MB</strong>.
-      El sistema detecta automáticamente la codificación (UTF-8, Windows-1252, Latin-1)
-      y el separador (coma, punto y coma, tabulación o barra).
-    </p>
+<div class="row justify-content-center py-4">
+  <div class="col-lg-8">
+    
+    <!-- Tarjeta contenedora principal estilo SaaS Enterprise -->
+    <div class="card border border-slate-200 shadow-sm rounded-4 bg-white p-4 p-md-5">
+      
+      <div class="text-center mb-4">
+        <span class="badge bg-secondary text-white px-3 py-1 mb-2 fw-semibold text-uppercase" style="font-size: 0.7rem; letter-spacing: 0.5px;">Módulo RF1 &bull; Ingesta y Validación de Datos</span>
+        <h1 class="h3 fw-bold text-dark mb-2">Importar Dataset</h1>
+        <p class="text-muted small px-md-4 mb-0">
+          Seleccione o arrastre un archivo en formato <strong>.csv</strong> (Límite máximo: <strong>{{ tamano_maximo }} MB</strong>). El motor detecta de forma nativa la codificación y los delimitadores estructurales.
+        </p>
+      </div>
 
-    <form id="form-subida" action="{{ url_for('subir') }}" method="post" enctype="multipart/form-data">
-      <label for="archivo" id="zona" class="zona-subida">
-        <span class="fs-1">📄</span>
-        <span id="zona-texto">Arrastra tu CSV aquí o haz clic para elegirlo</span>
-        <input type="file" id="archivo" name="archivo" accept=".csv,text/csv" hidden>
-      </label>
-      <div id="error-cliente" class="text-danger small mt-2"></div>
-      <button id="btn-subir" type="submit" class="btn btn-primary w-100 mt-3" disabled>
-        Subir y validar
-      </button>
-    </form>
+      <form id="form-subida" action="{{ url_for('subir') }}" method="post" enctype="multipart/form-data">
+        <label for="archivo" id="zona" class="zona-subida p-5 mb-3 border border-2 rounded-3 text-center position-relative d-block" style="cursor: pointer;">
+          
+          <!-- Contenedor inicial de carga -->
+          <div id="estado-inicial">
+            <div class="mb-3">
+              <svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="text-primary mb-1" viewBox="0 0 24 24">
+                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                <polyline points="14 2 14 8 20 8"></polyline>
+                <line x1="12" y1="18" x2="12" y2="12"></line>
+                <line x1="9" y1="15" x2="15" y2="15"></line>
+              </svg>
+            </div>
+            <span class="fw-semibold text-dark d-block mb-1">Arrastre el archivo CSV aquí o haga clic para examinar</span>
+            <span class="text-muted d-block" style="font-size: 0.75rem;">Soporta delimitadores estándar (coma, punto y coma, tabulador)</span>
+          </div>
+
+          <!-- Contenedor de archivo seleccionado (Oculto al inicio) -->
+          <div id="estado-seleccionado" class="d-none">
+            <div class="mb-2">
+              <svg xmlns="http://www.w3.org/2000/svg" width="38" height="38" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-success mb-1" viewBox="0 0 24 24">
+                <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
+                <polyline points="22 4 12 14.01 9 11.01"></polyline>
+              </svg>
+            </div>
+            <span id="nombre-archivo" class="text-dark fw-bold d-block"></span>
+            <span id="tamanio-archivo" class="text-muted small d-block mb-2"></span>
+            <span class="badge bg-success-subtle text-success border border-success-subtle px-2 py-1" style="font-size: 0.7rem;">Archivo verificado y listo para procesamiento</span>
+          </div>
+
+          <input type="file" id="archivo" name="archivo" accept=".csv,text/csv" hidden>
+        </label>
+        
+        <div id="error-cliente" class="alert alert-danger py-2 small d-none mt-2 rounded-3" role="alert"></div>
+        
+        <div class="d-flex gap-2 mt-3">
+          <button id="btn-subir" type="submit" class="btn btn-primary w-100 py-3 shadow-sm fw-semibold" disabled>
+            Procesar y Validar Dataset
+          </button>
+          <button id="btn-reset" type="button" class="btn btn-outline-secondary py-3 px-4 d-none" title="Cambiar archivo">
+            Cambiar
+          </button>
+        </div>
+      </form>
+
+    </div>
+
+    <!-- Panel técnico inferior formal -->
+    <div class="row mt-4 text-center text-muted small g-3">
+      <div class="col-4">
+        <div class="p-2 border bg-white rounded-3 shadow-xs fw-medium text-secondary">Control de Integridad</div>
+      </div>
+      <div class="col-4">
+        <div class="p-2 border bg-white rounded-3 shadow-xs fw-medium text-secondary">Validación RF1 Activa</div>
+      </div>
+      <div class="col-4">
+        <div class="p-2 border bg-white rounded-3 shadow-xs fw-medium text-secondary">Pipeline RF2 / RF3</div>
+      </div>
+    </div>
+
   </div>
 </div>
 {% endblock %}
 
 {% block scripts %}
 <script>
-  // Validación rápida en el navegador (la validación real se hace en Python).
   const MAX_BYTES = {{ tamano_maximo }} * 1024 * 1024;
   const input = document.getElementById('archivo');
   const zona = document.getElementById('zona');
-  const texto = document.getElementById('zona-texto');
-  const btn = document.getElementById('btn-subir');
-  const error = document.getElementById('error-cliente');
+  const estadoInicial = document.getElementById('estado-inicial');
+  const estadoSeleccionado = document.getElementById('estado-seleccionado');
+  const nombreArchivo = document.getElementById('nombre-archivo');
+  const tamanioArchivo = document.getElementById('tamanio-archivo');
+  const btnSubir = document.getElementById('btn-subir');
+  const btnReset = document.getElementById('btn-reset');
+  const errorDiv = document.getElementById('error-cliente');
 
   function revisar(archivo) {
-    error.textContent = '';
-    btn.disabled = true;
+    errorDiv.textContent = '';
+    errorDiv.classList.add('d-none');
+    btnSubir.disabled = true;
+    
     if (!archivo) return;
+    
     if (!archivo.name.toLowerCase().endsWith('.csv')) {
-      error.textContent = 'Solo se aceptan archivos .csv';
+      errorDiv.textContent = 'Formato no válido. Únicamente se admiten archivos con extensión .csv';
+      errorDiv.classList.remove('d-none');
       return;
     }
+    
     if (archivo.size > MAX_BYTES) {
-      error.textContent = 'El archivo supera los {{ tamano_maximo }} MB';
+      errorDiv.textContent = 'El archivo excede el límite máximo permitido de {{ tamano_maximo }} MB';
+      errorDiv.classList.remove('d-none');
       return;
     }
-    texto.textContent = archivo.name + ' (' + (archivo.size / 1024).toFixed(1) + ' KB)';
-    btn.disabled = false;
+    
+    // Cambiar a estado de archivo cargado
+    nombreArchivo.textContent = archivo.name;
+    tamanioArchivo.textContent = `Tamaño: ${(archivo.size / 1024).toFixed(1)} KB`;
+    estadoInicial.classList.add('d-none');
+    estadoSeleccionado.classList.remove('d-none');
+    zona.classList.add('border-success', 'bg-light');
+    btnSubir.disabled = false;
+    btnReset.classList.remove('d-none');
+  }
+
+  function resetearFormulario() {
+    input.value = '';
+    estadoSeleccionado.classList.add('d-none');
+    estadoInicial.classList.remove('d-none');
+    zona.classList.remove('border-success', 'bg-light');
+    btnSubir.disabled = true;
+    btnReset.classList.add('d-none');
+    errorDiv.classList.add('d-none');
   }
 
   input.addEventListener('change', () => revisar(input.files[0]));
+  btnReset.addEventListener('click', (e) => {
+    e.preventDefault();
+    resetearFormulario();
+  });
+  
   ['dragover', 'dragenter'].forEach(ev => zona.addEventListener(ev, e => {
-    e.preventDefault(); zona.classList.add('activa');
+    e.preventDefault(); 
+    zona.classList.add('activa', 'border-primary');
   }));
-  ['dragleave', 'drop'].forEach(ev => zona.addEventListener(ev, () => zona.classList.remove('activa')));
+  
+  ['dragleave', 'drop'].forEach(ev => zona.addEventListener(ev, () => {
+    zona.classList.remove('activa', 'border-primary');
+  }));
+  
   zona.addEventListener('drop', e => {
     e.preventDefault();
-    input.files = e.dataTransfer.files;
-    revisar(input.files[0]);
+    if (e.dataTransfer.files.length > 0) {
+      input.files = e.dataTransfer.files;
+      revisar(input.files[0]);
+    }
   });
+  
   document.getElementById('form-subida').addEventListener('submit', () => {
-    btn.disabled = true; btn.textContent = 'Validando…';
+    btnSubir.disabled = true; 
+    btnSubir.innerHTML = '<span class="spinner-border spinner-border-sm me-2" role="status" aria-hidden="true"></span> Validando estructura del dataset...';
   });
 </script>
 {% endblock %}

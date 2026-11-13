@@ -2,45 +2,71 @@
 {% block titulo %}Resultados y Modelos{% endblock %}
 
 {% block contenido %}
-<h2 class="mb-4">Resultados y Modelos Entrenados</h2>
+<h2 class="mb-4 fw-bold text-dark">Resultados y Modelos Entrenados</h2>
 
-<div class="card mb-4 border-primary">
-    <div class="card-header bg-primary text-white fw-semibold">Resumen Limpieza (RF2)</div>
+<div class="card mb-4">
+    <div class="card-header bg-primary text-white fw-semibold">Resumen Limpieza Automática (RF2)</div>
     <div class="card-body">
-        <p class="mb-0">Filas finales: {{ d.resumen_limpieza.filas_finales }} | Nulos tratados: {{ d.resumen_limpieza.nulos_tratados }} | Duplicados eliminados: {{ d.resumen_limpieza.duplicados_eliminados }}</p>
+        <p class="mb-0">Filas finales: <strong>{{ d.resumen_limpieza.filas_finales }}</strong> | Nulos tratados: <strong>{{ d.resumen_limpieza.nulos_tratados }}</strong> | Duplicados eliminados: <strong>{{ d.resumen_limpieza.duplicados_eliminados }}</strong></p>
     </div>
 </div>
 
 <div class="d-flex justify-content-between align-items-center mb-3">
-    <h4 class="mb-0">Modelos de Árbol de Decisión (RF3)</h4>
-    <a href="{{ url_for('configurar', id_dataset=d.id) }}" class="btn btn-outline-success btn-sm">+ Entrenar nuevo árbol</a>
+    <h4 class="mb-0 fw-semibold text-secondary">Modelos de Árbol de Decisión (RF3)</h4>
+    <a href="{{ url_for('configurar', id_dataset=d.id) }}" class="btn btn-success btn-sm">+ Entrenar nuevo árbol</a>
 </div>
 
 {% if d.modelos_entrenados %}
     {% for mod in d.modelos_entrenados|reverse %}
     <div class="card shadow-sm mb-4">
-        <div class="card-header bg-dark text-white d-flex justify-content-between">
-            <span>Modelo ID: {{ mod.id_modelo }}</span>
+        <div class="card-header bg-dark text-white d-flex justify-content-between align-items-center">
+            <span>Modelo ID: <code>{{ mod.id_modelo }}</code></span>
             <span>Target: <strong>{{ mod.target }}</strong></span>
         </div>
-        <div class="card-body row">
-            <div class="col-md-4">
-                <h6 class="fw-semibold">Métricas</h6>
+        <div class="card-body row align-items-center">
+            <div class="col-md-4 border-end">
+                <h6 class="fw-bold text-dark mb-3">Métricas de Evaluación</h6>
                 <ul class="list-group list-group-flush mb-3">
-                    <li class="list-group-item px-0">Exactitud: <strong>{{ mod.metricas.exactitud }}</strong></li>
-                    <li class="list-group-item px-0">Precisión: {{ mod.metricas.precision }}</li>
-                    <li class="list-group-item px-0">Recall: {{ mod.metricas.recall }}</li>
+                    <li class="list-group-item px-0 d-flex justify-content-between"><span>Exactitud:</span> <strong>{{ mod.metricas.exactitud }}</strong></li>
+                    <li class="list-group-item px-0 d-flex justify-content-between"><span>Precisión:</span> <strong>{{ mod.metricas.precision }}</strong></li>
+                    <li class="list-group-item px-0 d-flex justify-content-between"><span>Recall:</span> <strong>{{ mod.metricas.recall }}</strong></li>
                 </ul>
-                <h6 class="fw-semibold">Parámetros Usados</h6>
-                <small>Criterio: {{ mod.parametros.criterio }} | Profundidad: {{ mod.parametros.profundidad or 'Libre' }} | Test: {{ mod.parametros.test_size * 100 }}%</small>
+                <h6 class="fw-bold text-dark mb-2">Parámetros del Modelo</h6>
+                <p class="text-muted small mb-0">Criterio: <strong>{{ mod.parametros.criterio }}</strong> | Profundidad: <strong>{{ mod.parametros.profundidad or 'Libre' }}</strong> | Test: <strong>{{ mod.parametros.test_size * 100 }}%</strong></p>
             </div>
+            
             <div class="col-md-8 text-center">
-                <img src="{{ url_for('static', filename=mod.grafico) }}" alt="Árbol" class="img-fluid border rounded" style="max-height: 400px;">
+                <div class="mb-2">
+                    <span class="badge bg-secondary px-3 py-1 font-monospace" style="cursor: pointer;" data-bs-toggle="modal" data-bs-target="#modalZoom{{ loop.index }}">🔍 Haz clic en el gráfico para ampliar</span>
+                </div>
+                <div class="p-2 border rounded bg-light">
+                    <img src="{{ url_for('static', filename=mod.grafico) }}" 
+                         alt="Árbol" 
+                         class="img-fluid rounded" 
+                         style="max-height: 350px; cursor: zoom-in;" 
+                         data-bs-toggle="modal" 
+                         data-bs-target="#modalZoom{{ loop.index }}">
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL DE BOOTSTRAP CON EL BOTÓN CERRAR ARRIBA A LA DERECHA -->
+    <div class="modal fade" id="modalZoom{{ loop.index }}" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-xl modal-dialog-centered">
+            <div class="modal-content border-0 shadow-lg rounded-3">
+                <div class="modal-header bg-dark text-white px-4 py-3 d-flex justify-content-between align-items-center">
+                    <h5 class="modal-title fs-6 mb-0">Vista Detallada — Árbol de Decisión (ID: {{ mod.id_modelo }})</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Cerrar"></button>
+                </div>
+                <div class="modal-body text-center p-4 bg-white">
+                    <img src="{{ url_for('static', filename=mod.grafico) }}" alt="Árbol Ampliado" class="img-fluid bg-light rounded border p-3 w-100" style="max-height: 80vh; object-fit: contain;">
+                </div>
             </div>
         </div>
     </div>
     {% endfor %}
 {% else %}
-    <div class="alert alert-info">Aún no has entrenado ningún modelo para este dataset.</div>
+    <div class="alert alert-info border">Aún no has entrenado ningún modelo para este dataset.</div>
 {% endif %}
 {% endblock %}
