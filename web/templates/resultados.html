@@ -1,0 +1,46 @@
+{% extends "base.html" %}
+{% block titulo %}Resultados y Modelos{% endblock %}
+
+{% block contenido %}
+<h2 class="mb-4">Resultados y Modelos Entrenados</h2>
+
+<div class="card mb-4 border-primary">
+    <div class="card-header bg-primary text-white fw-semibold">Resumen Limpieza (RF2)</div>
+    <div class="card-body">
+        <p class="mb-0">Filas finales: {{ d.resumen_limpieza.filas_finales }} | Nulos tratados: {{ d.resumen_limpieza.nulos_tratados }} | Duplicados eliminados: {{ d.resumen_limpieza.duplicados_eliminados }}</p>
+    </div>
+</div>
+
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <h4 class="mb-0">Modelos de Árbol de Decisión (RF3)</h4>
+    <a href="{{ url_for('configurar', id_dataset=d.id) }}" class="btn btn-outline-success btn-sm">+ Entrenar nuevo árbol</a>
+</div>
+
+{% if d.modelos_entrenados %}
+    {% for mod in d.modelos_entrenados|reverse %}
+    <div class="card shadow-sm mb-4">
+        <div class="card-header bg-dark text-white d-flex justify-content-between">
+            <span>Modelo ID: {{ mod.id_modelo }}</span>
+            <span>Target: <strong>{{ mod.target }}</strong></span>
+        </div>
+        <div class="card-body row">
+            <div class="col-md-4">
+                <h6 class="fw-semibold">Métricas</h6>
+                <ul class="list-group list-group-flush mb-3">
+                    <li class="list-group-item px-0">Exactitud: <strong>{{ mod.metricas.exactitud }}</strong></li>
+                    <li class="list-group-item px-0">Precisión: {{ mod.metricas.precision }}</li>
+                    <li class="list-group-item px-0">Recall: {{ mod.metricas.recall }}</li>
+                </ul>
+                <h6 class="fw-semibold">Parámetros Usados</h6>
+                <small>Criterio: {{ mod.parametros.criterio }} | Profundidad: {{ mod.parametros.profundidad or 'Libre' }} | Test: {{ mod.parametros.test_size * 100 }}%</small>
+            </div>
+            <div class="col-md-8 text-center">
+                <img src="{{ url_for('static', filename=mod.grafico) }}" alt="Árbol" class="img-fluid border rounded" style="max-height: 400px;">
+            </div>
+        </div>
+    </div>
+    {% endfor %}
+{% else %}
+    <div class="alert alert-info">Aún no has entrenado ningún modelo para este dataset.</div>
+{% endif %}
+{% endblock %}
