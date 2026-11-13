@@ -1,32 +1,181 @@
-.zona-subida {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: .5rem;
-  padding: 3rem 1rem;
-  border: 2px dashed #adb5bd;
-  border-radius: .75rem;
-  background: #f8f9fa;
-  cursor: pointer;
-  text-align: center;
-  transition: background .15s, border-color .15s;
+/* ==========================================================================
+   Estilos Corporativos Definitivos - Minería de Datos
+   ========================================================================== */
+
+body {
+    background-color: #f4f6f9;
+    color: #1e293b;
+    font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
 }
+
+/* Navbar con identidad institucional */
+.navbar {
+    background-color: #0b0f19 !important;
+    border-bottom: 3px solid #2563eb;
+}
+
+.navbar .nav-link:hover {
+    color: #ffffff !important;
+    background-color: rgba(255, 255, 255, 0.08);
+}
+
+/* Zona de arrastre de archivos (Drag & Drop) */
+.zona-subida {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 4rem 2rem;
+    border: 2px dashed #94a3b8;
+    border-radius: 1rem;
+    background: #ffffff;
+    cursor: pointer;
+    text-align: center;
+    transition: all 0.25s ease-in-out;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.02);
+}
+
 .zona-subida:hover,
 .zona-subida.activa {
-  background: #e7f1ff;
-  border-color: #0d6efd;
+    background: #f8fafc;
+    border-color: #2563eb;
+    box-shadow: 0 10px 25px -5px rgba(37, 99, 235, 0.1);
+    transform: translateY(-2px);
 }
 
+/* Tarjetas con estructura profesional y acento lateral */
+.card, .tarjeta {
+    background: #ffffff;
+    border: 1px solid #e2e8f0;
+    border-left: 4px solid #cbd5e1; /* Borde de terminación profesional */
+    border-radius: 0.75rem;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.02);
+    transition: all 0.2s ease;
+}
+
+.card:hover, .tarjeta:hover {
+    box-shadow: 0 8px 20px -4px rgba(0, 0, 0, 0.06);
+}
+
+/* Variaciones de acento izquierdo para diferenciar tarjetas */
+.card.border-primary, .border-primary { border-left-color: #2563eb !important; }
+.card.border-success, .border-success { border-left-color: #059669 !important; }
+
+/* Cabeceras de tarjetas limpias */
+.card-header {
+    background-color: #ffffff;
+    border-bottom: 1px solid #e2e8f0;
+    font-weight: 600;
+    color: #334155;
+    border-top-left-radius: 0.75rem !important;
+    border-top-right-radius: 0.75rem !important;
+    padding: 1rem 1.25rem;
+}
+
+.card-header.bg-primary {
+    background-color: #1e40af !important;
+    color: #ffffff !important;
+    border-bottom: none;
+    border-left: none;
+}
+
+.card-header.bg-dark {
+    background-color: #0f172a !important;
+    color: #ffffff !important;
+    border-bottom: none;
+    border-left: none;
+}
+
+/* Tarjetas de métricas superiores (Vista previa) */
 .tarjeta {
-  background: #fff;
-  border: 1px solid #dee2e6;
-  border-radius: .5rem;
-  padding: 1rem;
-  text-align: center;
+    padding: 1.25rem;
+    text-align: center;
+    border-left-color: #4f46e5;
 }
-.tarjeta .valor { font-size: 1.75rem; font-weight: 700; }
-.tarjeta .etiqueta { color: #6c757d; font-size: .875rem; }
 
-.tabla-datos { max-height: 500px; }
-.tabla-datos thead th { position: sticky; top: 0; background: #fff; }
-.nulo { color: #dc3545; font-style: italic; font-size: .8rem; }
+.tarjeta .valor { 
+    font-size: 2.25rem; 
+    font-weight: 800; 
+    color: #1e3a8a;
+    line-height: 1.2;
+}
+
+.tarjeta .etiqueta { 
+    color: #64748b; 
+    font-size: 0.8rem; 
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.8px;
+    margin-top: 0.4rem;
+}
+
+/* Tablas de datos con diseño limpio */
+.tabla-datos { 
+    max-height: 480px; 
+    border: 1px solid #e2e8f0;
+    border-radius: 0.5rem;
+    overflow-y: auto;
+    background: #ffffff;
+}
+
+.tabla-datos thead th { 
+    position: sticky; 
+    top: 0; 
+    background: #f1f5f9; 
+    color: #334155;
+    font-weight: 600;
+    border-bottom: 2px solid #cbd5e1;
+    z-index: 1;
+    padding: 0.75rem 1rem;
+}
+
+/* Scrollbar corporativo sutil */
+.tabla-datos::-webkit-scrollbar { width: 6px; height: 6px; }
+.tabla-datos::-webkit-scrollbar-track { background: #f8fafc; }
+.tabla-datos::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 3px; }
+.tabla-datos::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+
+/* Etiquetas nulos estructuradas */
+.nulo { 
+    color: #dc2626; 
+    font-style: normal; 
+    font-size: 0.75rem; 
+    font-weight: 700; 
+    background-color: #fef2f2;
+    border: 1px solid #fecaca;
+    padding: 0.2rem 0.5rem;
+    border-radius: 4px;
+    display: inline-block;
+}
+
+/* Botones con transiciones finas */
+.btn {
+    border-radius: 0.5rem;
+    font-weight: 600;
+    padding: 0.5rem 1.25rem;
+    transition: all 0.2s ease-in-out;
+}
+
+.btn-primary {
+    background-color: #2563eb;
+    border-color: #1d4ed8;
+    box-shadow: 0 1px 2px rgba(37, 99, 235, 0.2);
+}
+
+.btn-primary:hover {
+    background-color: #1d4ed8;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(37, 99, 235, 0.3);
+}
+
+.btn-success {
+    background-color: #059669;
+    border-color: #047857;
+    box-shadow: 0 1px 2px rgba(5, 150, 105, 0.2);
+}
+
+.btn-success:hover {
+    background-color: #047857;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(5, 150, 105, 0.3);
+}

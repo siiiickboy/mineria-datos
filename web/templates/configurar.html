@@ -1,0 +1,46 @@
+{% extends "base.html" %}
+{% block titulo %}Configurar Árbol{% endblock %}
+
+{% block contenido %}
+<h2 class="mb-4">Configurar Árbol de Decisión</h2>
+<form action="{{ url_for('entrenar', id_dataset=d.id) }}" method="post" class="card p-4 shadow-sm">
+    <div class="row">
+        <div class="col-md-6 mb-3">
+            <h5 class="fw-semibold">1. Selección de Variables</h5>
+            <label class="form-label mt-2">Variable Objetivo (Target)</label>
+            <select name="target" class="form-select" required>
+                {% for col in d.encabezados %}
+                    <option value="{{ col }}">{{ col }}</option>
+                {% endfor %}
+            </select>
+
+            <label class="form-label mt-3">Variables Predictoras</label>
+            <div class="border p-2 rounded" style="max-height: 150px; overflow-y: auto;">
+                {% for col in d.encabezados %}
+                    <div class="form-check">
+                        <input class="form-check-input" type="checkbox" name="predictoras" value="{{ col }}" checked>
+                        <label class="form-check-label">{{ col }}</label>
+                    </div>
+                {% endfor %}
+            </div>
+            <small class="text-muted">Desmarca la variable que elegiste como objetivo.</small>
+        </div>
+
+        <div class="col-md-6 mb-3">
+            <h5 class="fw-semibold">2. Hiperparámetros</h5>
+            <label class="form-label mt-2">Criterio de División</label>
+            <select name="criterio" class="form-select">
+                <option value="gini">Gini</option>
+                <option value="entropy">Entropía</option>
+            </select>
+
+            <label class="form-label mt-3">Profundidad Máxima (Max Depth)</label>
+            <input type="number" name="profundidad" class="form-control" placeholder="Ej: 3 (Opcional)">
+
+            <label class="form-label mt-3">Porcentaje para Prueba (Test Size %)</label>
+            <input type="number" name="test_size" class="form-control" value="30" min="10" max="50">
+        </div>
+    </div>
+    <button type="submit" class="btn btn-success mt-3 w-100">Entrenar Modelo</button>
+</form>
+{% endblock %}
