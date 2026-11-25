@@ -1,0 +1,108 @@
+{% extends "base.html" %}
+{% block titulo %}Informe · {{ d.nombre_original }}{% endblock %}
+
+{% block contenido %}
+<div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-4">
+  <div>
+    <h2 class="h3 mb-1 fw-bold text-dark">Informe de Minería de Datos (RF5)</h2>
+    <p class="text-muted small mb-0">Dataset: <strong>{{ d.nombre_original }}</strong> &bull; ID: <code>{{ d.id }}</code> &bull; Emitido: {{ fecha_emision }}</p>
+  </div>
+  {% if not exportado %}
+  <div class="d-flex gap-2">
+    <a href="{{ url_for('exportar_informe_html', id_dataset=d.id) }}" class="btn btn-success btn-sm">Exportar HTML</a>
+    <button type="button" onclick="window.print()" class="btn btn-outline-dark btn-sm">Imprimir / PDF</button>
+  </div>
+  {% endif %}
+</div>
+
+<div class="card shadow-sm mb-4">
+  <div class="card-header bg-primary text-white">1. Resumen del Dataset y Limpieza Automática (RF1 / RF2)</div>
+  <div class="card-body">
+    <p class="mb-2">
+      Archivo original: <strong>{{ d.nombre_original }}</strong> &bull;
+      Codificación: <strong>{{ d.codificacion }}</strong> &bull;
+      Separador: <strong>{{ d.separador_nombre }}</strong>
+    </p>
+    <p class="mb-0">
+      Filas iniciales: <strong>{{ d.resumen_limpieza.filas_originales }}</strong> &bull;
+      Filas finales: <strong>{{ d.resumen_limpieza.filas_finales }}</strong> &bull;
+      Nulos tratados: <strong>{{ d.resumen_limpieza.nulos_tratados }}</strong> &bull;
+      Duplicados eliminados: <strong>{{ d.resumen_limpieza.duplicados_eliminados }}</strong> &bull;
+      Atípicos tratados: <strong>{{ d.resumen_limpieza.atipicos_tratados }}</strong>
+    </p>
+  </div>
+</div>
+
+<div class="card shadow-sm mb-4">
+  <div class="card-header bg-dark text-white">2. Modelos de Árbol de Decisión (RF3)</div>
+  <div class="card-body p-0">
+    {% if d.modelos_entrenados %}
+    <div class="table-responsive">
+      <table class="table table-sm mb-0 align-middle">
+        <thead class="table-light">
+          <tr>
+            <th class="py-2 px-3">ID Modelo</th>
+            <th class="py-2 px-3">Target</th>
+            <th class="py-2 px-3">Criterio</th>
+            <th class="py-2 px-3 text-end">Exactitud</th>
+            <th class="py-2 px-3 text-end">Precisión</th>
+            <th class="py-2 px-3 text-end">Recall</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for m in d.modelos_entrenados %}
+          <tr>
+            <td class="px-3 py-2"><code>{{ m.id_modelo }}</code></td>
+            <td class="px-3 py-2">{{ m.target }}</td>
+            <td class="px-3 py-2">{{ m.parametros.criterio }}</td>
+            <td class="px-3 py-2 text-end">{{ m.metricas.exactitud }}</td>
+            <td class="px-3 py-2 text-end">{{ m.metricas.precision }}</td>
+            <td class="px-3 py-2 text-end">{{ m.metricas.recall }}</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+    {% else %}
+    <div class="p-3 text-muted small mb-0">Sin modelos entrenados registrados.</div>
+    {% endif %}
+  </div>
+</div>
+
+<div class="card shadow-sm mb-4">
+  <div class="card-header">3. Reglas de Asociación (RF4)</div>
+  <div class="card-body">
+    {% if d.analisis_asociacion %}
+      {% for lote in d.analisis_asociacion %}
+      <p class="small fw-semibold mb-2">Ejecución <code>{{ lote.id_analisis }}</code> ({{ lote.algoritmo }}) &mdash; {{ lote.total_reglas }} regla(s)</p>
+      {% if lote.reglas %}
+      <ul class="list-group list-group-flush mb-3">
+        {% for r in lote.reglas[:10] %}
+        <li class="list-group-item px-0 py-1 small">
+          <code>{{ r.antecedentes_str }}</code> &rarr; <code>{{ r.consecuentes_str }}</code>
+          <span class="text-muted">(soporte: {{ r.soporte }}, confianza: {{ r.confianza }}, lift: {{ r.lift }})</span>
+        </li>
+        {% endfor %}
+      </ul>
+      {% endif %}
+      {% endfor %}
+    {% else %}
+      <p class="text-muted small mb-0">Sin ejecuciones de reglas de asociación registradas.</p>
+    {% endif %}
+  </div>
+</div>
+
+<div class="card shadow-sm mb-4">
+  <div class="card-header">4. Conclusiones del Análisis</div>
+  <div class="card-body">
+    {% if not exportado %}
+    <form method="post">
+      <textarea name="notas_informe" rows="4" class="form-control mb-3" placeholder="Escribe aquí tus conclusiones técnicas sobre los datos, limpieza, modelos y reglas...">{{ d.notas_informe }}</textarea>
+      <button type="submit" class="btn btn-primary btn-sm">Guardar Conclusiones</button>
+    </form>
+    {% else %}
+      <p class="mb-0">{{ d.notas_informe or "Sin conclusiones registradas." }}</p>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}
