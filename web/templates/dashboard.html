@@ -1,0 +1,157 @@
+{% extends "base.html" %}
+{% block titulo %}Dashboard · {{ d.nombre_original }}{% endblock %}
+
+{% block contenido %}
+<div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-4">
+  <div>
+    <h2 class="h3 mb-1 fw-bold text-dark">Dashboard Analítico (RF6)</h2>
+    <p class="text-muted small mb-0">Dataset: <strong>{{ d.nombre_original }}</strong> (<code>{{ d.id }}</code>)</p>
+  </div>
+  <div class="d-flex gap-2">
+    <a href="{{ url_for('asociacion', id_dataset=d.id) }}" class="btn btn-outline-primary btn-sm">Asociación (RF4)</a>
+    <a href="{{ url_for('informe', id_dataset=d.id) }}" class="btn btn-primary btn-sm">Generar Informe (RF5)</a>
+  </div>
+</div>
+
+<div class="row g-3 mb-4">
+  <div class="col-6 col-md-4"><div class="tarjeta"><div class="valor">{{ dash.filas_filtradas }}</div><div class="etiqueta">Registros Activos</div></div></div>
+  <div class="col-6 col-md-4"><div class="tarjeta"><div class="valor">{{ dash.filas_totales }}</div><div class="etiqueta">Registros Limpios</div></div></div>
+  <div class="col-12 col-md-4"><div class="tarjeta"><div class="valor">{{ dash.columnas_totales }}</div><div class="etiqueta">Columnas</div></div></div>
+</div>
+
+<form method="get" class="card p-3 shadow-sm mb-4">
+  <div class="row g-2 align-items-end">
+    <div class="col-md-5">
+      <label class="form-label small fw-semibold mb-1">Filtrar por columna</label>
+      <select name="columna" class="form-select form-select-sm" onchange="this.form.submit()">
+        <option value="">-- Sin filtro adicional --</option>
+        {% for col in dash.columnas_disponibles %}
+          <option value="{{ col }}" {% if dash.filtro_columna == col %}selected{% endif %}>{{ col }}</option>
+        {% endfor %}
+      </select>
+    </div>
+    <div class="col-md-5">
+      <label class="form-label small fw-semibold mb-1">Valor de la columna</label>
+      <select name="valor" class="form-select form-select-sm">
+        <option value="__TODOS__">Todos los valores</option>
+        {% for val in dash.valores_filtro %}
+          <option value="{{ val }}" {% if dash.filtro_valor == val %}selected{% endif %}>{{ val }}</option>
+        {% endfor %}
+      </select>
+    </div>
+    <div class="col-md-2 d-grid">
+      <button type="submit" class="btn btn-dark btn-sm">Filtrar</button>
+    </div>
+  </div>
+</form>
+
+<div class="row g-4 mb-4">
+  {% for col, dist in dash.distribuciones_numericas.items() %}
+  <div class="col-md-6">
+    <div class="card shadow-sm h-100">
+      <div class="card-header d-flex justify-content-between align-items-center">
+        <span>Distribución numérica: <strong>{{ col }}</strong></span>
+        <span class="badge bg-light text-dark border">Prom: {{ dist.promedio }} | Med: {{ dist.mediana }}</span>
+      </div>
+      <div class="card-body">
+        <div id="chart_num_{{ loop.index }}" style="height: 260px;"></div>
+      </div>
+    </div>
+  </div>
+  {% endfor %}
+
+  {% for col, dist in dash.distribuciones_categoricas.items() %}
+  <div class="col-md-6">
+    <div class="card shadow-sm h-100">
+      <div class="card-header">Distribución categórica: <strong>{{ col }}</strong></div>
+      <div class="card-body">
+        <div id="chart_cat_{{ loop.index }}" style="height: 260px;"></div>
+      </div>
+    </div>
+  </div>
+  {% endfor %}
+</div>
+
+{% if dash.correlacion.columnas|length >= 2 %}
+<div class="card shadow-sm mb-4">
+  <div class="card-header">Matriz de Correlación (Variables Numéricas)</div>
+  <div class="card-body">
+    <div id="chart_corr" style="height: 340px;"></div>
+  </div>
+</div>
+{% endif %}
+
+<div class="card shadow-sm mb-4">
+  <div class="card-header">Resultados de Modelos Entrenados (RF3)</div>
+  <div class="card-body p-0">
+    {% if dash.resumen_modelos %}
+    <div class="table-responsive">
+      <table class="table table-sm mb-0 align-middle">
+        <thead class="table-light">
+          <tr>
+            <th class="py-2 px-3">ID Modelo</th>
+            <th class="py-2 px-3">Target</th>
+            <th class="py-2 px-3 text-end">Exactitud</th>
+            <th class="py-2 px-3 text-end">Precisión</th>
+            <th class="py-2 px-3 text-end">Recall</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for m in dash.resumen_modelos %}
+          <tr>
+            <td class="px-3 py-2"><code>{{ m.id_modelo }}</code></td>
+            <td class="px-3 py-2"><strong>{{ m.target }}</strong></td>
+            <td class="px-3 py-2 text-end">{{ m.exactitud }}</td>
+            <td class="px-3 py-2 text-end">{{ m.precision }}</td>
+            <td class="px-3 py-2 text-end">{{ m.recall }}</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+    {% else %}
+    <div class="p-3 text-muted small mb-0">Aún no hay modelos de árbol entrenados para este dataset.</div>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="https://cdn.plot.ly/plotly-2.35.2.min.js"></script>
+<script>
+  const distNum = {{ dash.distribuciones_numericas | tojson }};
+  const distCat = {{ dash.distribuciones_categoricas | tojson }};
+  const corr = {{ dash.correlacion | tojson }};
+  const layoutBase = { margin: { t: 20, r: 20, b: 50, l: 45 }, paper_bgcolor: "rgba(0,0,0,0)", plot_bgcolor: "rgba(0,0,0,0)" };
+
+  Object.entries(distNum).forEach(([col, data], idx) => {
+    Plotly.newPlot(`chart_num_${idx + 1}`, [{
+      x: data.etiquetas,
+      y: data.valores,
+      type: "bar",
+      marker: { color: "#2563eb" }
+    }], layoutBase, { responsive: true });
+  });
+
+  Object.entries(distCat).forEach(([col, data], idx) => {
+    Plotly.newPlot(`chart_cat_${idx + 1}`, [{
+      x: data.etiquetas,
+      y: data.valores,
+      type: "bar",
+      marker: { color: "#059669" }
+    }], layoutBase, { responsive: true });
+  });
+
+  if (corr.columnas && corr.columnas.length >= 2) {
+    Plotly.newPlot("chart_corr", [{
+      z: corr.matriz,
+      x: corr.columnas,
+      y: corr.columnas,
+      type: "heatmap",
+      colorscale: "Blues",
+      zmin: -1,
+      zmax: 1
+    }], { margin: { t: 20, r: 20, b: 60, l: 80 } }, { responsive: true });
+  }
+</script>
+{% endblock %}

@@ -1,0 +1,137 @@
+{% extends "base.html" %}
+{% block titulo %}Asociación · {{ d.nombre_original }}{% endblock %}
+
+{% block contenido %}
+<div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-4">
+  <div>
+    <h2 class="h3 mb-1 fw-bold text-dark">Módulo de Asociación (RF4)</h2>
+    <p class="text-muted small mb-0">Dataset: <strong>{{ d.nombre_original }}</strong> (<code>{{ d.id }}</code>)</p>
+  </div>
+  <div class="d-flex gap-2">
+    <a href="{{ url_for('dashboard', id_dataset=d.id) }}" class="btn btn-outline-primary btn-sm">Ir al Dashboard</a>
+    <a href="{{ url_for('informe', id_dataset=d.id) }}" class="btn btn-outline-secondary btn-sm">Ver Informe</a>
+  </div>
+</div>
+
+<form action="{{ url_for('asociacion', id_dataset=d.id) }}" method="post" class="card p-4 shadow-sm mb-4">
+  <input type="hidden" name="accion" value="generar">
+  <div class="row g-4">
+    <div class="col-md-6">
+      <h5 class="fw-semibold mb-2">1. Columnas a Analizar</h5>
+      <div class="border rounded p-3 bg-light" style="max-height: 190px; overflow-y: auto;">
+        {% for col in columnas %}
+          <div class="form-check">
+            <input class="form-check-input" type="checkbox" name="columnas" value="{{ col }}" id="col_{{ loop.index }}" checked>
+            <label class="form-check-label" for="col_{{ loop.index }}">{{ col }}</label>
+          </div>
+        {% endfor %}
+      </div>
+      <small class="text-muted">Las columnas numéricas con varios valores se agrupan en tramos (bajo, medio, alto).</small>
+    </div>
+
+    <div class="col-md-6">
+      <h5 class="fw-semibold mb-2">2. Parámetros del Algoritmo</h5>
+      <div class="row g-3">
+        <div class="col-sm-6">
+          <label class="form-label">Algoritmo</label>
+          <select name="algoritmo" class="form-select">
+            <option value="apriori">Apriori</option>
+            <option value="fpgrowth">FP-Growth</option>
+          </select>
+        </div>
+        <div class="col-sm-6">
+          <label class="form-label">Soporte Mínimo (0.01 - 1.0)</label>
+          <input type="number" step="0.01" min="0.01" max="1" name="soporte_min" class="form-control" value="0.20" required>
+        </div>
+        <div class="col-sm-6">
+          <label class="form-label">Confianza Mínima (0.01 - 1.0)</label>
+          <input type="number" step="0.01" min="0.01" max="1" name="confianza_min" class="form-control" value="0.60" required>
+        </div>
+        <div class="col-sm-6">
+          <label class="form-label">Lift Mínimo</label>
+          <input type="number" step="0.05" min="0" name="lift_min" class="form-control" value="1.00">
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <button type="submit" class="btn btn-primary mt-4 w-100 py-2">Generar Reglas de Asociación</button>
+</form>
+
+<div class="card p-3 shadow-sm mb-4">
+  <form method="get" class="row g-2 align-items-end">
+    <div class="col-md-6">
+      <label class="form-label small fw-semibold mb-1">Filtrar reglas por ítem (antecedente o consecuente)</label>
+      <input type="text" name="buscar" class="form-control form-control-sm" value="{{ buscar }}" placeholder="Ej: aprobado=si, edad, alto...">
+    </div>
+    <div class="col-md-4">
+      <label class="form-label small fw-semibold mb-1">Ordenar por métrica</label>
+      <select name="orden" class="form-select form-select-sm">
+        <option value="lift" {% if orden == 'lift' %}selected{% endif %}>Lift (mayor a menor)</option>
+        <option value="confianza" {% if orden == 'confianza' %}selected{% endif %}>Confianza (mayor a menor)</option>
+        <option value="soporte" {% if orden == 'soporte' %}selected{% endif %}>Soporte (mayor a menor)</option>
+      </select>
+    </div>
+    <div class="col-md-2 d-grid">
+      <button type="submit" class="btn btn-dark btn-sm">Aplicar</button>
+    </div>
+  </form>
+</div>
+
+{% if lotes %}
+  {% for lote in lotes %}
+  <div class="card shadow-sm mb-4">
+    <div class="card-header bg-dark text-white d-flex flex-wrap justify-content-between align-items-center gap-2">
+      <div>
+        <span>Ejecución <code>{{ lote.id_analisis }}</code></span>
+        <span class="badge bg-primary ms-2 text-uppercase">{{ lote.algoritmo }}</span>
+      </div>
+      <div class="d-flex align-items-center gap-2">
+        <span class="small text-white-50">
+          Soporte: <strong>{{ lote.parametros.soporte_min }}</strong> |
+          Confianza: <strong>{{ lote.parametros.confianza_min }}</strong> |
+          Lift mín: <strong>{{ lote.parametros.lift_min }}</strong>
+        </span>
+        <form action="{{ url_for('asociacion', id_dataset=d.id) }}" method="post" class="d-inline">
+          <input type="hidden" name="accion" value="eliminar">
+          <input type="hidden" name="id_analisis" value="{{ lote.id_analisis }}">
+          <button type="submit" class="btn btn-outline-light btn-sm py-0 px-2">Eliminar</button>
+        </form>
+      </div>
+    </div>
+    <div class="card-body p-0">
+      {% if lote.reglas_filtradas %}
+      <div class="table-responsive">
+        <table class="table table-hover table-sm mb-0 align-middle">
+          <thead class="table-light">
+            <tr>
+              <th class="py-2 px-3">Antecedentes</th>
+              <th class="py-2 px-3">Consecuentes</th>
+              <th class="py-2 px-3 text-end">Soporte</th>
+              <th class="py-2 px-3 text-end">Confianza</th>
+              <th class="py-2 px-3 text-end">Lift</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for r in lote.reglas_filtradas %}
+            <tr>
+              <td class="px-3 py-2"><code>{{ r.antecedentes_str }}</code></td>
+              <td class="px-3 py-2"><code>{{ r.consecuentes_str }}</code></td>
+              <td class="px-3 py-2 text-end">{{ r.soporte }}</td>
+              <td class="px-3 py-2 text-end fw-semibold">{{ r.confianza }}</td>
+              <td class="px-3 py-2 text-end"><span class="badge bg-success-subtle text-success border">{{ r.lift }}</span></td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+      {% else %}
+      <div class="p-3 text-muted small mb-0">No hay reglas que coincidan con el filtro aplicado en esta ejecución.</div>
+      {% endif %}
+    </div>
+  </div>
+  {% endfor %}
+{% else %}
+  <div class="alert alert-info border">Aún no se han generado reglas de asociación para este dataset.</div>
+{% endif %}
+{% endblock %}
